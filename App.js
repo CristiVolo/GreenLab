@@ -1,12 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { CardStyleInterpolators } from '@react-navigation/stack';
+import 'react-native-gesture-handler';
+
+import ActuatorControlScreen from './screens/ActuatorControlScreen';
+import GraphScreen from './screens/GraphScreen';
+
+const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName='GraphScreen'>
+        <Stack.Screen 
+          options={{
+            headerShown: false,
+            cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid
+          }} 
+          name = "ActuatorScreen" 
+          component = {ActuatorControlScreen}
+        /> 
+        <Stack.Screen 
+          options={{
+            headerShown: false, 
+            cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid
+          }} 
+          name = "GraphScreen" 
+          component = {GraphScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
