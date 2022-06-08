@@ -35,7 +35,7 @@ const LineGraph = ({
         fillShadowGradientFrom: backgroundGradientFrom,
         fillShadowGradientTo: backgroundGradientTo,
         decimalPlaces: 2, // optional, defaults to 2dp
-        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         style: {
             borderRadius: 16,
