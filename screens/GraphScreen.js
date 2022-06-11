@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Button, ScrollView } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { StyleSheet, Text, View, Button, ScrollView, RefreshControl } from "react-native";
 import TransferButton from "../components/TransferButton";
 import { SafeAreaView } from "react-native";
 import LineGraph from "../components/LineGraph";
@@ -27,6 +27,8 @@ const GraphScreen = ({ navigation }) => {
         "12": "Dec",
     };
 
+    const [refreshing, setRefreshing] = useState(false);
+
     const [airTemperatureDataSwitch, setAirTemperatureDataSwitch] = useState(false);
     const [airHumidityDataSwitch, setAirHumidityDataSwitch] = useState(false);
     const [lightDataSwitch, setLightDataSwitch] = useState(false);
@@ -34,21 +36,21 @@ const GraphScreen = ({ navigation }) => {
     const [waterLevelDataSwitch, setWaterLevelDataSwitch] = useState(false);
     const [soilMoistureDataSwitch, setSoilMoistureDataSwitch] = useState(false);
 
-    const [airTemperatureLastDay, setAirTemperatureLastDay] = useState([20, 45]);
-    const [airHumidityLastDay, setAirHumidityLastDay] = useState([20, 45]);
-    const [lightLastDay, setLightLastDay] = useState([20, 45]);
-    const [gasConcentrationLastDay, setGasConcentrationLastDay] = useState([20, 45]);
-    const [waterLevelLastDay, setWaterLevelLastDay] = useState([20, 45]);
-    const [soilMoistureLastDay, setSoilMoistureLastDay] = useState([20, 45]);
-    const [readDateLastDay, setReadDateLastDay] = useState(["January", "February"]);
+    const [airTemperatureLastDay, setAirTemperatureLastDay] = useState([20, 45, 30]);
+    const [airHumidityLastDay, setAirHumidityLastDay] = useState([20, 45, 30]);
+    const [lightLastDay, setLightLastDay] = useState([20, 45, 30]);
+    const [gasConcentrationLastDay, setGasConcentrationLastDay] = useState([20, 45, 30]);
+    const [waterLevelLastDay, setWaterLevelLastDay] = useState([20, 45, 30]);
+    const [soilMoistureLastDay, setSoilMoistureLastDay] = useState([20, 45, 30]);
+    const [readDateLastDay, setReadDateLastDay] = useState(["January", "February", "march"]);
 
-    const [airTemperatureLastWeek, setAirTemperatureLastWeek] = useState([11, 22]);
-    const [airHumidityLastWeek, setAirHumidityLastWeek] = useState([11, 22]);
-    const [lightLastWeek, setLightLastWeek] = useState([11, 22]);
-    const [gasConcentrationLastWeek, setGasConcentrationLastWeek] = useState([11, 22]);
-    const [waterLevelLastWeek, setWaterLevelLastWeek] = useState([11, 22]);
-    const [soilMoistureLastWeek, setSoilMoistureLastWeek] = useState([11, 22]);
-    const [readDateLastWeek, setReadDateLastWeek] = useState(["July", "August"]);
+    const [airTemperatureLastWeek, setAirTemperatureLastWeek] = useState([11, 22, 30]);
+    const [airHumidityLastWeek, setAirHumidityLastWeek] = useState([11, 22, 30]);
+    const [lightLastWeek, setLightLastWeek] = useState([11, 22, 30]);
+    const [gasConcentrationLastWeek, setGasConcentrationLastWeek] = useState([11, 22, 30]);
+    const [waterLevelLastWeek, setWaterLevelLastWeek] = useState([11, 22, 30]);
+    const [soilMoistureLastWeek, setSoilMoistureLastWeek] = useState([11, 22, 30]);
+    const [readDateLastWeek, setReadDateLastWeek] = useState(["July", "August", "march"]);
 
     // D:\xampp\htdocs\greenlab\sensor_data.php
     const wiFiIPv4 = "192.168.0.101";
@@ -56,6 +58,16 @@ const GraphScreen = ({ navigation }) => {
     const manualCommandsPhpFile = "sensor_data.php";
     const fetchCommand =
         "http://" + wiFiIPv4 + "/" + htdocsFolder + "/" + manualCommandsPhpFile;
+
+
+    const wait = (timeout) => {
+        return new Promise(resolve => setTimeout(resolve, timeout));
+    }
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        wait(2000).then(() => setRefreshing(false));
+    }, []);
 
     useEffect(() => {
         const getDbSensorData = async () => {
@@ -69,54 +81,58 @@ const GraphScreen = ({ navigation }) => {
                     console.log(
                         "~-------------------------------------------~"
                     );
+                    
 
                     // Last day
-                    // for (let i = 0; i < response.data.last_day.length; i++) {
-                    //     airTemperatureLastDay[i] = response.data.last_day[i].air_temperature;
-                    //     airHumidityLastDay[i] = response.data.last_day[i].air_humidity;
-                    //     lightLastDay[i] = response.data.last_day[i].light;
-                    //     gasConcentrationLastDay[i] = response.data.last_day[i].gas_concentration;
-                    //     waterLevelLastDay[i] = response.data.last_day[i].water_level;
-                    //     soilMoistureLastDay[i] = response.data.last_day[i].soil_moisture;
+                    for (let i = 0; i < response.data.last_day.length; i++) {
+                        airTemperatureLastDay[i] = Number(response.data.last_day[i].air_temperature);
+                        airHumidityLastDay[i] = Number(response.data.last_day[i].air_humidity);
+                        lightLastDay[i] = Number(response.data.last_day[i].light);
+                        gasConcentrationLastDay[i] = Number(response.data.last_day[i].gas_concentration);
+                        waterLevelLastDay[i] = Number(response.data.last_day[i].water_level);
+                        soilMoistureLastDay[i] = Number(response.data.last_day[i].soil_moisture);
 
-                    //     parsedReadDate = response.data.last_day[i].read_date;
-                    //     parsedDay = parsedReadDate.slice(9, 10);
-                    //     parsedHour = parsedReadDate.slice(11, 13);
-                    //     newParsedReadDate = parsedDay + 'h' + parsedHour;
-                    //     readDateLastDay[i] = newParsedReadDate;
-                    //     console.log(airTemperatureLastDay[i],' ',airHumidityLastDay[i],' ',airHumidityLastDay[i]);
-                    // }
+                        parsedReadDate = response.data.last_day[i].read_date;
+                        parsedDay = parsedReadDate.slice(8, 10);
+                        parsedHour = parsedReadDate.slice(11, 13);
+                        newParsedReadDate = parsedDay + 'h' + parsedHour;
+                        readDateLastDay[i] = newParsedReadDate;
+                    }
 
                     // // Last week
-                    // for (let i = 0; i < response.data.last_week.length; i++) {
-                    //     airTemperatureLastWeek[i] = response.data.last_week[i].avg_air_temperature;
-                    //     airHumidityLastWeek[i] = response.data.last_week[i].avg_air_humidity;
-                    //     lightLastWeek[i] = response.data.last_week[i].avg_light;
-                    //     gasConcentrationLastWeek[i] = response.data.last_week[i].avg_gas_concentration;
-                    //     waterLevelLastWeek[i] = response.data.last_week[i].avg_water_level;
-                    //     soilMoistureLastWeek[i] = response.data.last_week[i].avg_soil_moisture;
+                    for (let i = 0; i < response.data.last_week.length; i++) {
+                        airTemperatureLastWeek[i] = Number(response.data.last_week[i].avg_air_temperature);
+                        airHumidityLastWeek[i] = Number(response.data.last_week[i].avg_air_humidity);
+                        lightLastWeek[i] = Number(response.data.last_week[i].avg_light);
+                        gasConcentrationLastWeek[i] = Number(response.data.last_week[i].avg_gas_concentration);
+                        waterLevelLastWeek[i] = Number(response.data.last_week[i].avg_water_level);
+                        soilMoistureLastWeek[i] = Number(response.data.last_week[i].avg_soil_moisture);
 
-                    //     parsedReadDate = response.data.last_week[i].read_date;
-                    //     parsedMonth = month[response.data.last_week[i].read_month];
-                    //     parsedDay = response.data.last_week[i].read_day;
-                    //     newParsedReadDate = parsedMonth + ', ' + parsedDay;
-                    //     readDateLastWeek[i] = newParsedReadDate;
+                        parsedReadDate = response.data.last_week[i].read_date;
+                        parsedMonth = month[response.data.last_week[i].read_month];
+                        parsedDay = response.data.last_week[i].read_day;
+                        newParsedReadDate = parsedMonth + ', ' + parsedDay;
+                        readDateLastWeek[i] = newParsedReadDate;
                         
-                    //     console.log(airTemperatureLastWeek[i],' ',airHumidityLastWeek[i],' ',lightLastWeek[i]);
-                    // }
-
-                    
+                    }
                 })
                 .catch((err) => {
                     console.log(err);
                 });
         };
         getDbSensorData();
-    }, []);
+    }, [refreshing]);
 
     return (
-        <ScrollView>
-            <SafeAreaView>
+        <SafeAreaView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
                 <TransferButton
                     onPress={() => navigation.navigate("ActuatorScreen")}
                     style={{
@@ -199,8 +215,8 @@ const GraphScreen = ({ navigation }) => {
                     abscissaData={soilMoistureDataSwitch ? readDateLastWeek : readDateLastDay}
                     ordinateData={soilMoistureDataSwitch ? soilMoistureLastWeek : soilMoistureLastDay}
                 />
-            </SafeAreaView>
-        </ScrollView>
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 
